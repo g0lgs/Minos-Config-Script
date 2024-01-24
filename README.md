@@ -1,12 +1,15 @@
 # Radio-Config-Scripts
+# by Stewart (G0LGS)
 
 Purpose
+-------
 
 To update the Minos Radio Configuration file ~/runtime/Configuration/Radio/AvailRadio.ini to point to the correct /dev/ttyUSB<n> device for any number of connected Radio's
 
 Configuration
+-------------
 
-You will need to connect each Radio individually and use the udevadm command like:
+You will need to connect each Radio individually to the USB and use the udevadm command like:
 
 	udevadm info -a /dev/ttyUSB0 | less
 
@@ -14,22 +17,53 @@ or
 
 	udevadm info -a -n ttyUSB0 | less
 
-to examine the details so you cna populate the UDEV Rule file '99-hamlib.rules'  (placed in /etc/udev/rules.d/) with the details of your radio's
+to examine the details so you can correctly populate the UDEV Rule file '99-hamlib.rules' with the details of your radio's
 
-You will need ATTRS{idVendor} (10c4 for Icom Radios) and ATTRS{idProduct} and ATTRS{serial}
+	From the udevam output you will need:
 
-Each Radio Needs a unique Symlink so that the Minos-FixComPorts.pl Script can associate them with the configured Radios
+	ATTRS{idVendor}		('10c4')
+	ATTRS{idProduct}	('ea60')
+	ATTRS{serial}		(includes the radio Model and an identifying Serial)
 
+Each Radio Needs a unique name so that the Minos-FixComPorts.pl Script can associate them with the configured Radios
 
-# Create symlinks for USB ports for Specific Radio's (G0LGS Feb 2021)
-# IC 7300
-KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN+="/usr/local/sbin/Minos-FixComPorts.pl -Q &"
-# IC 9700
-KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN+="/usr/local/sbin/Minos-FixComPorts.pl -Q &"
-KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 B", SYMLINK+="ic9700b"
+The example '99-hamlib.rules' is:
 
-ACTION=="change", SUBSYSTEM=="sound", DEVPATH=="/devices/*/usb*/sound/card?", ENV{PULSE_NAME}="$env{ID_ID}.$env{ID_PATH_TAG}"
+	# Create symlinks for USB ports for Specific Radio's
+
+	# IC 7300
+	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN+="/usr/local/sbin/Minos-FixComPorts.pl -Q &"
+
+	# IC 9700 (the 'A' port is used for CAT control)
+	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN+="/usr/local/sbin/Minos-FixComPorts.pl -Q &"
+	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 B", SYMLINK+="ic9700b"
+
+	# Sound Interfaces
+	ACTION=="change", SUBSYSTEM=="sound", DEVPATH=="/devices/*/usb*/sound/card?", ENV{PULSE_NAME}="$env{ID_ID}.$env{ID_PATH_TAG}"
 
 
 You will also need to Modifiy Minos-FixComPorts.pl to set the correct Paths and Radio IDs
+
+As the udev rules are run as 'root' you will need to correctly set the Path to your Minos runtime configuration folder:
+
+	my($CfgPath)= '/home/g0lgs/runtime/Configuration';
+
+As well as define Radios as configured in Minos and matching /dev/<name> as assigned by the custom udev rules
+
+	my %Radios = ();
+	$Radios{"IC-9700"}= { 'port' => '/dev/ic9700a'};
+	$Radios{"IC-7300"}= { 'port' => '/dev/ic7300'};
+
+
+Installation
+------------
+
+Place the '99-hamlib.rules' file in /etc/udev/rules.d/
+
+	sudo cp -f 99-hamlib.rules /etc/udev/rules.d/
+
+Place the Minos-FixComPorts.pl in /usr/local/sbin
+
+	sudo cp Minos-FixComPorts.pl /usr/local/sbin
+	sudo chmod 744 /usr/local/sbin/Minos-FixComPorts.pl
 
