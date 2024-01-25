@@ -1,5 +1,6 @@
 # Radio-Config-Scripts
-# by Stewart (G0LGS)
+
+by Stewart (G0LGS)
 
 Purpose
 -------
@@ -11,21 +12,19 @@ Configuration
 
 You will need to connect each Radio individually to the USB and use the udevadm command like:
 
-	udevadm info -a /dev/ttyUSB0 | less
-
+	sudo udevadm info -a /dev/ttyUSB0
 or
+	sudo udevadm info -a -n ttyUSB0
 
-	udevadm info -a -n ttyUSB0 | less
-
-to examine the details so you can correctly populate the UDEV Rule file '99-hamlib.rules' with the details of your radio's
+Examine the details so you can correctly populate the UDEV Rule file '99-hamlib.rules' with the details of your radio's
 
 	From the udevam output you will need:
 
-	ATTRS{idVendor}		('10c4')
-	ATTRS{idProduct}	('ea60')
-	ATTRS{serial}		(includes the radio Model and an identifying Serial)
+	ATTRS{idVendor}		(probably '10c4')
+	ATTRS{idProduct}	(probably 'ea60')
+	ATTRS{serial}		(may include the radio model and an identifying serial)
 
-Each Radio Needs a unique name so that the Minos-FixComPorts.pl Script can associate them with the configured Radios
+Each Radio Needs a unique name for each port so that the Minos-FixComPorts.pl Script can associate them with the configured Radios
 
 The example '99-hamlib.rules' is:
 
