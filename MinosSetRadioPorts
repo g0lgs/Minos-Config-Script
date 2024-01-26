@@ -1,0 +1,165 @@
+#!/usr/bin/env perl
+
+# Script to update Minos Radio Comport configuration based on Identified
+# by Stewart Wilkinson G0LGS
+# Created: 20 Feb 2021
+# Updated: 26 Jan 2024
+
+# Note: Minos is sensitive to changes to the config files and
+# will reject the file if the case of values are changed
+# therefore the radio definitions must match exactly
+
+# Requires libconfig-inifiles-perl
+
+use warnings;
+use strict;
+use Config::IniFiles;
+use File::stat;
+use Getopt::Long qw(VersionMessage :config no_auto_abbrev );
+use Pod::Usage qw(pod2usage);
+
+=head1 NAME
+
+	MinosSetRadioPorts
+
+=cut
+our($VERSION)="0.2";
+our($VERDATE)="26/01/2024";
+
+=head1 VERSION
+
+	V0.2 26/01/2024
+
+=cut
+my($VERBOSE)=0;
+my($QUIET)=0;
+my($ExitVal)=0;
+
+my($CfgPath);
+
+# Get command options
+if( ! GetOptions (
+	'V|VERBOSE+'	=> \$VERBOSE,
+
+	'ver|version'	=> sub { VersionMessage( "-exitval" => -1 ); },
+
+	'Q|QUIET'	=> sub { $QUIET=1; $VERBOSE=0; },
+
+	'c|cfg=s'	=> \$CfgPath,
+
+	'h|help|?'	=> sub { pod2usage( -verbose => 99, -sections => "NAME|VERSION|SYNOPSIS|DESCRIPTION|COPYRIGHT" ); },
+
+	'man'		=> sub { pod2usage( -verbose => 2, -noperldoc =>0 ); },
+) ) {
+	pod2usage( { -message => "Wrong or Missing Paramaters!\n", -verbose => 0} );
+	exit 1;
+}
+
+if( !defined($CfgPath) ) {
+	pod2usage( { -message => "-cfg Paramater is Required.\n", -verbose => 0} );
+	exit 1;
+}
+
+my($IniPath) = $CfgPath. '/Radio/AvailRadio.ini';
+
+if( ! -f $IniPath ){
+	printf STDERR "ERROR: %s was not found\n", $IniPath unless($QUIET);
+	exit 1;
+}
+
+# Get File Owner
+my $gid = stat($IniPath)->gid;
+my $uid = stat($IniPath)->uid;
+
+my $MinosIni = Config::IniFiles->new(-file => $IniPath );
+
+# Define Radios expected in Minos and port alias created by udev
+my %Radios = ();
+$Radios{"IC-9700"}= { 'port' => '/dev/ic9700a'};
+$Radios{"IC-7300"}= { 'port' => '/dev/ic7300'};
+
+foreach my $radio (keys %Radios) {
+	
+	if( defined $Radios{$radio}{'port'} ){
+
+		my $RadioPort = $Radios{$radio}{'port'};
+		printf "Checking %s link as %s\n", $radio, $RadioPort if($VERBOSE);
+
+		# Does the defined /dev/name symlink exist ?
+		if ( -e $RadioPort ) {
+			printf "Found %s\n", $RadioPort if($VERBOSE);
+			# read the link
+			my $ComPort = readlink $RadioPort;
+			if( $ComPort ) {
+				printf "\tas %s\n", $ComPort if($VERBOSE);
+				if ($MinosIni->exists($radio, 'comport')) {
+					if( $MinosIni->setval($radio, 'comport', $ComPort ) ){
+						printf "Updated port for %s OK\n", $radio if($VERBOSE);
+					}else{
+						printf "WARNING: Failed to update port for %s\n", $radio if($VERBOSE);
+					}
+				} else {
+					printf "WARNING: No Minos Radio defined for %s\n", $radio if($VERBOSE);
+				}
+			}
+		}else{
+			printf "No %s found.\n", $RadioPort if($VERBOSE);
+		}
+	}else{
+		printf STDERR "ERROR: No port defined for %s\n", $radio unless($QUIET);
+		$ExitVal++;
+	}
+}
+
+$MinosIni->RewriteConfig();
+
+# Restore Owner
+chown $uid, $gid, $IniPath;
+
+exit $ExitVal;
+
+__END__
+
+=head1 SYNOPSIS
+
+	MinosSetRadioPorts [options]
+
+	MinosSetRadioPorts -man | -help
+
+	options:
+		-Q
+		-V 
+		-cfg <Path_to_minos_configuration_folder>
+
+
+=head1 DESCRIPTION
+
+B<MinosSetRadioPorts> Updates Minos Radio configuration file (AvailRadio.ini) to have the correct 
+ttyUSB interface values each time radios with USB to CAT interfaces are connected to the Computer. It 
+relies on a correctly configured udev rule to call this program each time a matching USB device is 
+detected.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-V> | B<-VERBOSE>
+
+Make the output more Verbose, the program will only output messages to stdout if Verbose is set.
+
+=item B<-Q> | B<-QUIET>
+
+Be Quiet - turns off Verbose option
+
+=item B<-c> | B<-cfg> <path>
+
+The path to the Minos Configuration Folder - this is a required parameter, the script will exit
+with an error if not specified or if the folder cannot be access.
+
+=back
+
+=head1 COPYRIGHT
+
+MinosSetRadioPorts is B<Copyright> (c) 2021-2024 by Stewart Wilkinson (G0LGS) (stewart.g0lgs@gmail.com)
+
+=cut
