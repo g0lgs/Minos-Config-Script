@@ -27,7 +27,7 @@ your radio's
 	ATTRS{idProduct}	(probably 'ea60')
 	ATTRS{serial}		(may include the radio model and an identifying serial)
 
-Each Radio Needs a unique name for each port so that the MinosSetRadoPorts.pl Script can associate them with 
+Each Radio Needs a unique name for each port so that the MinosSetRadoPorts Script can associate them with 
 the configured Radios
 
 The example '99-hamlib.rules' is:
@@ -38,7 +38,7 @@ The example '99-hamlib.rules' is:
 	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN+="/usr/local/sbin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
 
 	# IC 9700 (the 'A' port is used for CAT control)
-	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN+="/usr/local/sbin/MinosSetRadioPorts.pl -cfg /home/g0lgs/runtime/Configuration -Q &"
+	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN+="/usr/local/sbin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
 	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 B", SYMLINK+="ic9700b"
 
 	# Sound Interfaces
@@ -48,7 +48,7 @@ The example '99-hamlib.rules' is:
 As the udev rules are run as 'root' you will need to correctly set the Path to your Minos runtime 
 configuration folder using the -cfg parameter in the RUN options above.
 
-Currently you will also need to Modifiy MinosSetRadioPorts.pl to set the correct Paths and Radio IDs as 
+Currently you will also need to Modifiy MinosSetRadioPorts to set the correct Paths and Radio IDs as 
 configured in Minos and matching /dev/<name> as assigned by the custom udev rules
 
 	my %Radios = ();
@@ -63,8 +63,8 @@ Place the '99-hamlib.rules' file in /etc/udev/rules.d/
 
 	sudo cp -f 99-hamlib.rules /etc/udev/rules.d/
 
-Place the MinosSetRadioPorts.pl in /usr/local/sbin
+Place the MinosSetRadioPorts in /usr/local/sbin
 
-	sudo cp -f MinosSetRadioPorts.pl /usr/local/sbin
-	sudo chmod 744 /usr/local/sbin/MinosSetRadioPorts.pl
+	sudo cp -f MinosSetRadioPorts /usr/local/sbin
+	sudo chmod 744 /usr/local/sbin/MinosSetRadioPorts
 
