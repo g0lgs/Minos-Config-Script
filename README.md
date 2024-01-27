@@ -30,26 +30,26 @@ your radio's
 Each Radio Needs a unique name for each port so that the MinosSetRadoPorts Script can associate them with 
 the configured Radios
 
-The example '99-hamlib.rules' is:
+The example '99-hamlib.rules':
 
 	# Create symlinks for USB ports for Specific Radio's
 
 	# IC 7300
-	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN+="/usr/local/sbin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
+	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN{program}+="/usr/loc	al/sbin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
 
-	# IC 9700 (the 'A' port is used for CAT control)
-	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN+="/usr/local/sbin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
+	# IC 9700
+	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN{program}+="/usr/	local/sbin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
 	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 B", SYMLINK+="ic9700b"
 
-	# Sound Interfaces
+	# Create Consistent Names for Sound (Codec) devices based on the USB port that device is connected
+	# This makes it easier to configure apps that use Sound Devices provided that you always use the same USB port / Hub combination
 	ACTION=="change", SUBSYSTEM=="sound", DEVPATH=="/devices/*/usb*/sound/card?", ENV{PULSE_NAME}="$env{ID_ID}.$env{ID_PATH_TAG}"
 
-
-As the udev rules are run as 'root' you will need to correctly set the Path to your Minos runtime 
+As anything invoked by udev rules are run as 'root' you will need to correctly set the Path to your Minos runtime 
 configuration folder using the -cfg parameter in the RUN options above.
 
-Currently you will also need to Modifiy MinosSetRadioPorts to set the correct Paths and Radio IDs as 
-configured in Minos and matching /dev/<name> as assigned by the custom udev rules
+Currently you will also need to Modifiy MinosSetRadioPorts to set the correct Paths and Radio IDs as configured in 
+Minos and matching /dev/<name> as assigned by the custom udev rules
 
 	my %Radios = ();
 	$Radios{"IC-9700"}= { 'port' => '/dev/ic9700a'};
