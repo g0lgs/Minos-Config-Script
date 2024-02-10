@@ -35,10 +35,10 @@ The example '99-hamlib.rules':
 	# Create symlinks for USB ports for Specific Radio's
 
 	# IC 7300
-	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN{program}+="/usr/loc	al/sbin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
+	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
 
 	# IC 9700
-	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN{program}+="/usr/	local/sbin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
+	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
 	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 B", SYMLINK+="ic9700b"
 
 	# Create Consistent Names for Sound (Codec) devices based on the USB port that device is connected
@@ -63,8 +63,8 @@ Place the '99-hamlib.rules' file in /etc/udev/rules.d/
 
 	sudo cp -f 99-hamlib.rules /etc/udev/rules.d/
 
-Place the MinosSetRadioPorts in /usr/local/sbin
+Place the MinosSetRadioPorts in /usr/local/bin
 
-	sudo cp -f MinosSetRadioPorts /usr/local/sbin
-	sudo chmod 744 /usr/local/sbin/MinosSetRadioPorts
+	sudo cp -f MinosSetRadioPorts /usr/local/bin
+	sudo chmod 744 /usr/local/bin/MinosSetRadioPorts
 
