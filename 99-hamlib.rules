@@ -1,11 +1,12 @@
 # Create symlinks for USB ports for Specific Radio's
 
 # IC 7300
-KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
+ACTION=="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q"
 
 # IC 9700
-KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
-KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 B", SYMLINK+="ic9700b"
+ACTION=="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q"
+
+ACTION="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 B", SYMLINK+="ic9700b"
 
 # Create Consistent Names for Sound (Codec) devices based on the USB port that device is connected
 # This makes it easier to configure apps that use Sound Devices provided that you always use the same USB port / Hub combination

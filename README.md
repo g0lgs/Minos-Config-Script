@@ -14,14 +14,16 @@ Configuration
 
 You will need to connect each Radio individually to the USB and use the udevadm command like:
 
-	sudo udevadm info -a /dev/ttyUSB0
-or
 	sudo udevadm info -a -n ttyUSB0
+
+and perhaps:
+
+	sudo udevadm info -p $(udevadm info -q path -n /dev/ttyUSB0)
 
 Examine the details so you can correctly populate the UDEV Rule file '99-hamlib.rules' with the details of 
 your radio's
 
-	From the udevam output you will need:
+	From the udevadm output you will need:
 
 	ATTRS{idVendor}		(probably '10c4')
 	ATTRS{idProduct}	(probably 'ea60')
@@ -35,11 +37,11 @@ The example '99-hamlib.rules':
 	# Create symlinks for USB ports for Specific Radio's
 
 	# IC 7300
-	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
+	ACTION=="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 03011354", SYMLINK+="ic7300" RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
 
 	# IC 9700
-	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
-	KERNEL=="ttyUSB?" SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 B", SYMLINK+="ic9700b"
+	ACTION=="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 A", SYMLINK+="ic9700a" RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q &"
+	ACTION=="add", KERNEL=="ttyUSB?" SUBSYSTEMS=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 13001015 B", SYMLINK+="ic9700b"
 
 	# Create Consistent Names for Sound (Codec) devices based on the USB port that device is connected
 	# This makes it easier to configure apps that use Sound Devices provided that you always use the same USB port / Hub combination
