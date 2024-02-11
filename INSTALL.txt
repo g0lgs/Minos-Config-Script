@@ -17,8 +17,6 @@ mkdir ~/git
 git clone https://github.com/g0lgs/Minos-Config-Script.git ~/git/Minos-Config-Script
 cd ~/git/Minos-Config-Script
 
-git checkout -b MyConfig
-
 Configuration
 -------------
 
