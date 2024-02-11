@@ -3,7 +3,7 @@
 # Script to update Minos Radio Comport configuration based on identified USB->tty Devices
 # by Stewart Wilkinson G0LGS
 # Created: 20 Feb 2021
-# Updated: 27 Jan 2024
+# Updated: 11 Feb 2024
 
 # Note: Minos is sensitive to changes to the config files and
 # will reject the file if the case of values are changed
@@ -14,7 +14,9 @@
 use warnings;
 use strict;
 use Config::IniFiles;
+use File::Basename;
 use File::stat;
+use Sys::Syslog qw(:DEFAULT setlogsock);
 use Getopt::Long qw(VersionMessage :config no_auto_abbrev );
 use Pod::Usage qw(pod2usage);
 use Data::Dumper;
@@ -24,6 +26,8 @@ use POSIX qw/strftime/;
 my %Radios = ();
 $Radios{"IC-9700"}= { 'port' => '/dev/ic9700a'};
 $Radios{"IC-7300"}= { 'port' => '/dev/ic7300'};
+#$Radios{"IC-7100"}= { 'port' => '/dev/ic7100'};
+#$Radios{"FT-817"}= { 'port' => '/dev/ft817'};
 
 # You should not need to edit below #
 # --------------------------------- #
@@ -33,12 +37,12 @@ $Radios{"IC-7300"}= { 'port' => '/dev/ic7300'};
 	MinosSetRadioPorts
 
 =cut
-our($VERSION)="0.3";
-our($VERDATE)="27/01/2024";
+our($VERSION)="0.4";
+our($VERDATE)="11/02/2024";
 
 =head1 VERSION
 
-	V0.3 27/01/2024
+	V0.4 11/02/2024
 
 =cut
 
@@ -71,12 +75,12 @@ if( ! GetOptions (
 	exit 1;
 }
 
-if( $< != 0 ){
-	printf STDERR "WARNING: This script should be run as 'root' (it may not perform as expected)\n\n" unless($QUIET);
-}
+setlogsock("unix");
+openlog(basename($0), "pid", "local3");
 
 if( !defined($CfgPath) ) {
 	pod2usage( { -message => "-cfg Paramater is Required.\n", -verbose => 0} );
+	syslog("err", "-cfg Paramater is Required.");
 	exit 1;
 }
 
@@ -87,6 +91,7 @@ my($IniPath) = $CfgPath. '/Radio/AvailRadio.ini';
 # Check File exists
 if( ! -e -f $IniPath ){
 	printf STDERR "ERROR: %s was not found\n", $IniPath unless($QUIET);
+	syslog("err", "%s was not found", $IniPath);
 	exit 1;
 }
 
@@ -103,6 +108,7 @@ my $MinosIni = Config::IniFiles->new(-file => $IniPath );
 # Report any Error with reading the file
 unless( $MinosIni ){
 	printf STDERR "Errors were found in %s:\n%s\n", $IniPath, join("\n", @Config::IniFiles::errors);
+	syslog("err", "Errors were found in %s: %s", $IniPath, join("", @Config::IniFiles::errors) );
 	exit 1;
 }
 
@@ -132,35 +138,42 @@ foreach my $radio (keys %Radios) {
 						$MinosIni->SetParameterComment($radio, 'comport', @comment);
 					}else{
 						printf "WARNING: Failed to update port for %s\n", $radio if($VERBOSE);
+						syslog("warning", "Failed to update port for %s", $radio );
 					}
 
 				} else {
 					printf "WARNING: No Minos Radio defined for %s\n", $radio if($VERBOSE);
+					syslog("warning", "No Minos Radio defined for %s", $radio );
 				}
 
 			}else{
 				printf "WARNING: %s is not a valid link\n", $RadioPort if($VERBOSE);
+				syslog("warning", "%s is not a valid link", $RadioPort );
 			}
 
 		}else{
-			printf "%s not found or not valid.\n", $RadioPort if($VERBOSE);
+			printf "WARNING: %s not found or not valid.\n", $RadioPort unless($QUIET);
+			syslog("warning", "%s not found or not valid", $RadioPort ) if($VERBOSE);
 		}
 	}else{
 		printf STDERR "ERROR: No port alias defined for %s\n", $radio unless($QUIET);
+		syslog("err", "No port alias defined for %s", $radio );
 		$ExitVal++;
 	}
 }
 
 # Write Updates to the file
-if ($Updated ) {
+if ( $Updated ) {
 	$MinosIni->RewriteConfig();
 
-	# Ensure we retain Owner / Perms
-	chown $uid, $gid, $IniPath;
-	chmod $mode, $IniPath;
-
+	# If 'root' Ensure we retain Owner / Perms
+	if( $< == 0 ){
+		chown $uid, $gid, $IniPath;
+		chmod $mode, $IniPath;
+	}
 }
 
+closelog();
 exit $ExitVal;
 
 __END__

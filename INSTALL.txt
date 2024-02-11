@@ -17,6 +17,8 @@ mkdir ~/git
 git clone https://github.com/g0lgs/Minos-Config-Script.git ~/git/Minos-Config-Script
 cd ~/git/Minos-Config-Script
 
+git checkout -b MyConfig
+
 Configuration
 -------------
 
@@ -57,6 +59,11 @@ The example '99-hamlib.rules':
 	ACTION=="add", KERNEL=="ttyUSB?" SUBSYSTEMS=="tty", \
 	ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 01234567 B", SYMLINK+="ic9700b"
 
+	# FT-817 using FTDI Interface
+	ACTION=="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", \
+	ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="AFWZ9VXZ", SYMLINK+="ft817" \
+	RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/<user>/runtime/Configuration -Q"
+
 	# Create Consistent Names for Sound (Codec) devices based on the USB port that device is connected
 	# This makes it easier to configure apps that use Sound Devices provided that you always use the same USB port / Hub combination
 	ACTION=="change", SUBSYSTEM=="sound", DEVPATH=="/devices/*/usb*/sound/card?", ENV{PULSE_NAME}="$env{ID_ID}.$env{ID_PATH_TAG}"
@@ -71,6 +78,7 @@ Minos and matching /dev/<name> as assigned by the custom udev rules
 	my %Radios = ();
 	$Radios{"IC-9700"}= { 'port' => '/dev/ic9700a'};
 	$Radios{"IC-7300"}= { 'port' => '/dev/ic7300'};
+	$Radios{"FT-817"}= { 'port' => '/dev/ft817'};
 
 
 Installation
@@ -85,7 +93,17 @@ Place the MinosSetRadioPorts in /usr/local/bin
 	sudo cp -f MinosSetRadioPorts /usr/local/bin
 	sudo chmod 744 /usr/local/bin/MinosSetRadioPorts
 
+Reload udev
+
 	sudo udevadm control --reload
+
+Test the script by disconnecting at reconnecting the USB to your radio, check the logs with
+
+	journalctl | grep MinosSet | tail -n 10
+
+To examine your ~/runtime/Configuration/Radio/AvailRadio.ini and you should see where it has updated the 'comport=' line
+
+	grep -B2 "comport=" ~/runtime/Configuration/Radio/AvailRadio.ini
 
 ---
 Stewart G0LGS
