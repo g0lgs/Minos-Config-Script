@@ -13,6 +13,11 @@ RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/<user>/runtime/Confi
 ACTION="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", \
 ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 01234567 B", SYMLINK+="ic9700b"
 
+# FT-817 using FTDI Interface
+ACTION=="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", \
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="AFWZ9VXZ", SYMLINK+="ft817" \
+RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/<user>/runtime/Configuration -Q"
+
 # Create Consistent Names for Sound (Codec) devices based on the USB port that device is connected
 # This makes it easier to configure apps that use Sound Devices provided that you always use the same USB port / Hub combination
 ACTION=="change", SUBSYSTEM=="sound", DEVPATH=="/devices/*/usb*/sound/card?", ENV{PULSE_NAME}="$env{ID_ID}.$env{ID_PATH_TAG}"
