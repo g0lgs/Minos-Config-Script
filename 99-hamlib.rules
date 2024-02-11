@@ -3,12 +3,12 @@
 # IC 7300
 ACTION=="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", \
 ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-7300 012345674", SYMLINK+="ic7300" \
-RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q"
+RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/<user>/runtime/Configuration -Q"
 
 # IC 9700
 ACTION=="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", \
 ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 01234567 A", SYMLINK+="ic9700a" \
-RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/g0lgs/runtime/Configuration -Q"
+RUN{program}+="/usr/local/bin/MinosSetRadioPorts -cfg /home/<user>/runtime/Configuration -Q"
 
 ACTION="add", KERNEL=="ttyUSB?" SUBSYSTEM=="tty", \
 ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="IC-9700 01234567 B", SYMLINK+="ic9700b"
