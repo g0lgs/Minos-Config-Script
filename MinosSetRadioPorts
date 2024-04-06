@@ -3,7 +3,6 @@
 # Script to update Minos Radio Comport configuration based on identified USB->tty Devices
 # by Stewart Wilkinson G0LGS
 # Created: 20 Feb 2021
-# Updated: 11 Feb 2024
 
 # Note: Minos is sensitive to changes to the config files and
 # will reject the file if the case of values are changed
@@ -37,12 +36,12 @@ $Radios{"IC-7300"}= { 'port' => '/dev/ic7300'};
 	MinosSetRadioPorts
 
 =cut
-our($VERSION)="0.4";
-our($VERDATE)="11/02/2024";
+our($VERSION)="0.5";
+our($VERDATE)="06/04/2024";
 
 =head1 VERSION
 
-	V0.4 11/02/2024
+	V0.5 06/04/2024
 
 =cut
 
@@ -136,6 +135,7 @@ foreach my $radio (keys %Radios) {
 						$Updated++;
 						printf "Updated port for %s OK\n", $radio if($VERBOSE);
 						$MinosIni->SetParameterComment($radio, 'comport', @comment);
+						syslog("info", "Updated port for %s applied", $RadioPort );
 					}else{
 						printf "WARNING: Failed to update port for %s\n", $radio if($VERBOSE);
 						syslog("warning", "Failed to update port for %s", $radio );
